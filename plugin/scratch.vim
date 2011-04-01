@@ -92,6 +92,24 @@ function! s:ScratchBufferOpen(new_win)
     endif
 endfunction
 
+" Toggle a scratch buffer in a split window:
+" - If scratch buffer is not visible, create/open it in a split window
+" - If scratch buffer is visible in a split window, close it and return
+"   focus to the window you were in
+" - If scratch buffer is the only open window, do nothing
+function! s:ScratchBufferToggle()
+    let scr_bufnum = bufnr(g:ScratchBufferName)
+    let scr_winnum = bufwinnr(scr_bufnum)
+    if scr_winnum == -1
+        call s:ScratchBufferOpen(1)
+    elseif winnr("$") > 1
+        let cur_winnum = winnr()
+        exe scr_winnum . "wincmd w"
+        exe scr_winnum . "wincmd q"
+        exe cur_winnum . "wincmd w"
+    endif
+endfunction
+
 " ScratchMarkBuffer
 " Mark a buffer as scratch
 function! s:ScratchMarkBuffer()
@@ -107,4 +125,6 @@ autocmd BufNewFile __Scratch__ call s:ScratchMarkBuffer()
 command! -nargs=0 Scratch call s:ScratchBufferOpen(0)
 " Command to open the scratch buffer in a new split window
 command! -nargs=0 Sscratch call s:ScratchBufferOpen(1)
+" Command to toggle the scratch buffer in a split window
+command! -nargs=0 SscratchToggle call s:ScratchBufferToggle()
 
